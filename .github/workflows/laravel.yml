@@ -71,9 +71,6 @@ jobs:
           cp .env.example .env
           sed -i 's/DB_USERNAME=root/DB_USERNAME=${{ secrets.DB_USERNAME }}/g' .env
           sed -i 's/DB_PASSWORD=/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/g' .env
-          sed -i 's|VTIGER_URL=http://localhost:8080|VTIGER_URL=${{ secrets.VTIGER_URL }}|g' .env
-          sed -i 's/VTIGER_USERNAME=admin/VTIGER_USERNAME=${{ secrets.VTIGER_USERNAME }}/g' .env
-          sed -i 's/VTIGER_ACCESS_KEY=1234567890/VTIGER_ACCESS_KEY=${{ secrets.VTIGER_ACCESS_KEY }}/g' .env
 
       - name: Setup Laravel
         run: |
@@ -105,7 +102,7 @@ jobs:
           port: 22
           key: ${{ secrets.DEPLOY_KEY }}
           source: "./"
-          target: "~/path_to_project"
+          target: "~/test_project"
 
       - name: Run laravel commands
         uses: appleboy/ssh-action@master
@@ -115,4 +112,4 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           script:
-            chown -R www-root ~/path_to_project && cd ~/path_to_project && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
+            chown -R www-root ~/test_project && cd ~/test_project && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
