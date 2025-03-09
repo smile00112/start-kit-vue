@@ -106,4 +106,4 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           script:
-            chown -R www-root ~/test_project && cd ~/test_project && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
+            chown -R www-data ~/test_project && cd ~/test_project && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
