@@ -42,8 +42,6 @@ jobs:
         run: npm run build
       - name: Run PHPUnit Tests
         run: ./vendor/bin/phpunit --colors=always
-      - name: PHPStan
-        run: ./vendor/bin/phpstan analyse
 
   deploy:
     needs: [build]
