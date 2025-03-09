@@ -86,7 +86,7 @@ jobs:
         run: npm run build
       - name: Clean Up
         run: rm -rf node_modules
-      - name: copy file via ssh key
+      - name: copy file via ssh key  ${{ secrets.DB_USERNAME }} - ${{ secrets.SERVER_IP }} - ${{ secrets.DEPLOY_KEY }} |
         uses: appleboy/scp-action@v0.1.4
 
         with:
