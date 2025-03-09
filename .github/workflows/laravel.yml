@@ -63,8 +63,9 @@ jobs:
       - name: Setup Environment File
         run: |
           cp .env.example .env
+          sed -i 's/APP_URL=/APP_URL=${{ secrets.APP_URL }}/g' .env
           sed -i 's/DB_USERNAME=root/DB_USERNAME=${{ secrets.DB_USERNAME }}/g' .env
-          sed -i 's/DB_PASSWORD=/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/g' .env
+          sed -i 's/# DB_PASSWORD=/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/g' .env
 
       - name: Setup Laravel
         run: |
@@ -96,7 +97,7 @@ jobs:
           port: 22
           key: ${{ secrets.DEPLOY_KEY }}
           source: "./"
-          target: "~/test_project"
+          target: "~/${{ secrets.APP_FOLDER }}"
 
       - name: Run laravel commands
         uses: appleboy/ssh-action@master
@@ -106,4 +107,63 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           script:
-            chown -R www-data ~/test_project && cd ~/test_project && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
+            chown -R www-data ~/${{ secrets.APP_FOLDER }} && cd ~/${{ secrets.APP_FOLDER }} && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
+            
+      - name: SSH and setup Nginx
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: 22
+          script: |
+            # Установка Nginx (если не установлен)
+            sudo apt update
+            sudo apt install -y nginx
+      
+            # Проверка существования конфигурации
+            if [ ! -f /etc/nginx/sites-available/${{ secrets.APP_FOLDER }} ]; then
+              # Создание конфигурации Nginx, если файл не существует
+              sudo bash -c 'cat > /etc/nginx/sites-available/${{ secrets.APP_NAME }} <<EOF
+              server {
+                  listen 80;
+                  listen [::]:80;
+                  server_name ${{ secrets.APP_URL }};
+                  root /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }}/public;
+              
+                  add_header X-Frame-Options "SAMEORIGIN";
+                  add_header X-Content-Type-Options "nosniff";
+              
+                  index index.php;
+              
+                  charset utf-8;
+              
+                  location / {
+                      try_files $uri $uri/ /index.php?$query_string;
+                  }
+              
+                  location = /favicon.ico { access_log off; log_not_found off; }
+                  location = /robots.txt  { access_log off; log_not_found off; }
+              
+                  error_page 404 /index.php;
+              
+                  location ~ ^/index\.php(/|$) {
+                      fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+                      fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+                      include fastcgi_params;
+                      fastcgi_hide_header X-Powered-By;
+                  }
+              
+                  location ~ /\.(?!well-known).* {
+                      deny all;
+                  }
+              }
+              EOF'
+      
+              # Активация конфигурации
+              sudo ln -sf /etc/nginx/sites-available/${{ secrets.APP_NAME }} /etc/nginx/sites-enabled/
+              sudo nginx -t
+              sudo systemctl reload nginx
+            else
+              echo "Конфигурация Nginx уже существует, пропускаем создание."
+            fi
