@@ -71,9 +71,9 @@ jobs:
           port: 22
           envs: 'SERVER_USERNAME:${{ secrets.SERVER_USERNAME }},APP_FOLDER:${{ secrets.APP_FOLDER }}'
           script:
-            echo "Creating directory /home/$SERVER_USERNAME/$APP_FOLDER | ${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }}"
+            echo "Creating directory /home/SERVER_USERNAME/$APP_FOLDER | ${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }}"
             mkdir -p "/home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }}"
-            chown -R www-data /home/$SERVER_USERNAME/$APP_FOLDER && cd /home/$SERVER_USERNAME/$APP_FOLDER && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
+            chown -R www-data /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }} && cd /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }} && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
             
       - name: SSH and setup Nginx
         uses: appleboy/ssh-action@master
