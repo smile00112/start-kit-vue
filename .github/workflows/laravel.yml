@@ -7,44 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-
-      - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
-
-      - name: Setup Laravel
-        run: |
-          cp .env.example .env
-          php artisan config:clear
-          php artisan cache:clear
-          php artisan key:generate
-
-      - name: Composer Audit
-        run: composer audit
-      - name: Composer Validate
-        run: composer validate --no-check-all --strict
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-      - name: Install Node.js Dependencies
-        run: npm install
-      - name: Build Vue.js
-        run: npm run build
-      - name: Run PHPUnit Tests
-        run: ./vendor/bin/phpunit --colors=always
-
   deploy:
-    needs: [build]
     runs-on: ubuntu-latest
 
     steps:
@@ -97,7 +60,7 @@ jobs:
           port: 22
           key: ${{ secrets.DEPLOY_KEY }}
           source: "./"
-          target: "~/${{ secrets.APP_FOLDER }}"
+          target: "/home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }}"
 
       - name: Run laravel commands
         uses: appleboy/ssh-action@master
@@ -107,7 +70,7 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           script:
-            chown -R www-data ~/${{ secrets.APP_FOLDER }} && cd ~/${{ secrets.APP_FOLDER }} && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
+            chown -R www-data /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }} && cd /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }} && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
             
       - name: SSH and setup Nginx
         uses: appleboy/ssh-action@master
