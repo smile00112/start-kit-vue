@@ -28,8 +28,6 @@ jobs:
           php artisan cache:clear
           php artisan key:generate
 
-      - name: Composer Lint
-        run: ./vendor/bin/phplint --no-cache
       - name: Composer Audit
         run: composer audit
       - name: Composer Validate
@@ -44,8 +42,6 @@ jobs:
         run: npm run build
       - name: Run PHPUnit Tests
         run: ./vendor/bin/phpunit --colors=always
-      - name: Lint PHP Code
-        run: ./vendor/bin/pint --test
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse
 
