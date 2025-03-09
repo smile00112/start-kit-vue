@@ -70,6 +70,7 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: 22
           script:
+            mkdir /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }}
             chown -R www-data /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }} && cd /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }} && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
             
       - name: SSH and setup Nginx
