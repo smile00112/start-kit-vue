@@ -71,7 +71,7 @@ jobs:
           port: 22
           envs: 'SERVER_USERNAME:${{ secrets.SERVER_USERNAME }},APP_FOLDER:${{ secrets.APP_FOLDER }}'
           script:
-            mkdir /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }}
+            mkdir -p /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.APP_FOLDER }}
             chown -R www-data /home/$SERVER_USERNAME/$APP_FOLDER && cd /home/$SERVER_USERNAME/$APP_FOLDER && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan migrate
             
       - name: SSH and setup Nginx
